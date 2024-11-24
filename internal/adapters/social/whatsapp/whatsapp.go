@@ -67,8 +67,7 @@ func (w *whatsapp) Close() error {
 }
 
 func (w *whatsapp) Start() error {
-	dbLog := waLog.Stdout("Database", "DEBUG", true)
-	container, err := sqlstore.New("sqlite3", "file:whatsapp.db?_foreign_keys=on", dbLog)
+	container, err := sqlstore.New("sqlite3", "file:whatsapp.db?_foreign_keys=on", waLog.Noop)
 	if err != nil {
 		return err
 	}
@@ -77,8 +76,7 @@ func (w *whatsapp) Start() error {
 	if err != nil {
 		return err
 	}
-	clientLog := waLog.Stdout("Client", "DEBUG", true)
-	client := whatsmeow.NewClient(w.deviceStore, clientLog)
+	client := whatsmeow.NewClient(w.deviceStore, waLog.Noop)
 	client.AddEventHandler(w.eventHandler)
 	w.client = client
 
