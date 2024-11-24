@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/whatsapp"
+	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	"go.uber.org/fx"
 )
 
@@ -22,6 +23,6 @@ func Run() {
 	app.Run()
 }
 
-func start() {
+func start(social ports.Social) {
 
 }

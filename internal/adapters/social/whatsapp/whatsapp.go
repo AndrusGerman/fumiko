@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
@@ -17,7 +19,8 @@ import (
 )
 
 type whatsapp struct {
-	client *whatsmeow.Client
+	client      *whatsmeow.Client
+	deviceStore *store.Device
 }
 
 func New(lc fx.Lifecycle) ports.Social {
@@ -50,6 +53,8 @@ func (w *whatsapp) Register() error {
 		}
 	}
 
+	time.Sleep(time.Second * 1)
+	w.deviceStore.Save()
 	return nil
 }
 
@@ -68,12 +73,12 @@ func (w *whatsapp) Start() error {
 		return err
 	}
 	// If you want multiple sessions, remember their JIDs and use .GetDevice(jid) or .GetAllDevices() instead.
-	deviceStore, err := container.GetFirstDevice()
+	w.deviceStore, err = container.GetFirstDevice()
 	if err != nil {
 		return err
 	}
 	clientLog := waLog.Stdout("Client", "DEBUG", true)
-	client := whatsmeow.NewClient(deviceStore, clientLog)
+	client := whatsmeow.NewClient(w.deviceStore, clientLog)
 	client.AddEventHandler(w.eventHandler)
 	w.client = client
 
