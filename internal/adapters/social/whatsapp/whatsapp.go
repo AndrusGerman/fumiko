@@ -21,10 +21,20 @@ import (
 type whatsapp struct {
 	client      *whatsmeow.Client
 	deviceStore *store.Device
+	events      chan *events.Message
+
+	socialHandlers []ports.SocialHandler
+}
+
+func (w *whatsapp) AddHandlers(handlers ...ports.SocialHandler) {
+	w.socialHandlers = handlers
 }
 
 func New(lc fx.Lifecycle) ports.Social {
-	var social = new(whatsapp)
+	var social = &whatsapp{
+		events: make(chan *events.Message),
+	}
+
 	lc.Append(fx.StopHook(social.Close))
 	lc.Append(fx.StartHook(social.Start))
 	return social
@@ -67,6 +77,13 @@ func (w *whatsapp) Close() error {
 }
 
 func (w *whatsapp) Start() error {
+	// process messages
+	go func() {
+		for message := range w.events {
+			w.processMessage(message)
+		}
+	}()
+
 	container, err := sqlstore.New("sqlite3", "file:whatsapp.db?_foreign_keys=on", waLog.Noop)
 	if err != nil {
 		return err
@@ -86,9 +103,25 @@ func (w *whatsapp) Start() error {
 	return nil
 }
 
+func (w *whatsapp) processMessage(event *events.Message) {
+	fmt.Println("Received a message!", event.Message.GetConversation())
+
+	var socialMessage = newSocialMessage(event, w.client)
+
+	for _, handler := range w.socialHandlers {
+		if handler.IsValid(socialMessage) {
+			handler.Message(socialMessage)
+		}
+	}
+}
+
 func (w *whatsapp) eventHandler(evt interface{}) {
 	switch v := evt.(type) {
 	case *events.Message:
-		fmt.Println("Received a message!", v.Message.GetConversation())
+		var message = v.Message.GetConversation()
+		if message == "" {
+			return
+		}
+		w.events <- v
 	}
 }
