@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AndrusGerman/fumiko/internal/adapters/llm/ollama"
+	"github.com/AndrusGerman/fumiko/internal/adapters/rest"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/whatsapp"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler/fumiko"
@@ -16,6 +17,9 @@ func privide() fx.Option {
 	return fx.Provide(
 		// social manager
 		whatsapp.New,
+
+		// rest
+		rest.New,
 
 		// llm
 		ollama.New,

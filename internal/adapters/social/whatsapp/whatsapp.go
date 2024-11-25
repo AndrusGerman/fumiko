@@ -108,10 +108,13 @@ func (w *whatsapp) processMessage(event *events.Message) {
 
 	var socialMessage = newSocialMessage(event, w.client)
 
-	for _, handler := range w.socialHandlers {
-		if handler.IsValid(socialMessage) {
-			handler.Message(socialMessage)
+	for i := range w.socialHandlers {
+		var isValid = w.socialHandlers[i].IsValid(socialMessage)
+		if !isValid {
+			continue
 		}
+		w.socialHandlers[i].Message(socialMessage)
+		return
 	}
 }
 
