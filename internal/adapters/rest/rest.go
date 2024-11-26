@@ -16,6 +16,7 @@ func (r *rest) Post(url string, body any, out any) error {
 	var err error
 	var bodyByte []byte
 	var resp *http.Response
+
 	if bodyByte, err = json.Marshal(body); err != nil {
 		return err
 	}

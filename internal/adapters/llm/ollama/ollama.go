@@ -1,12 +1,15 @@
 package ollama
 
 import (
+	"strings"
+
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 )
 
 type ollama struct {
-	rest  ports.Rest
-	model string
+	rest   ports.Rest
+	model  string
+	memory []*message
 }
 
 func New(rest ports.Rest) ports.LLM {
@@ -17,8 +20,10 @@ func New(rest ports.Rest) ports.LLM {
 }
 
 func (o *ollama) BasicQuest(text string) string {
-	var m = newMessage("user", text)
-	var request = newOllamaRequest(o.model, []*message{m})
+	var m = newMessage("user", strings.TrimSpace(text))
+	o.memory = append(o.memory, m)
+
+	var request = newOllamaRequest(o.model, o.memory)
 	var err error
 	var response = new(messageResponse)
 
@@ -26,5 +31,6 @@ func (o *ollama) BasicQuest(text string) string {
 		return err.Error()
 	}
 
+	o.memory = append(o.memory, newMessage(response.Message.Role, strings.TrimSpace(response.Message.Content)))
 	return response.Message.Content
 }

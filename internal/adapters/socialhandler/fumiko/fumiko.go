@@ -18,13 +18,13 @@ func (f *FumikoHandler) IsValid(sm ports.SocialMessage) bool {
 	if len(message) < 1 {
 		return false
 	}
-	return string(message[0]) == "."
+	return string(message[0]) == ","
 }
 
 // Message implements ports.SocialHandler.
 func (f *FumikoHandler) Message(sm ports.SocialMessage) {
 	var response = f.llm.BasicQuest(sm.GetText()[1:])
 
-	sm.ReplyText(response)
+	sm.ReplyText("Fumiko💚:\n" + response)
 
 }
