@@ -3,8 +3,11 @@ package bootstrap
 import (
 	"fmt"
 
+	"github.com/AndrusGerman/fumiko/internal/adapters/config"
 	"github.com/AndrusGerman/fumiko/internal/adapters/llm/ollama"
 	"github.com/AndrusGerman/fumiko/internal/adapters/rest"
+	"github.com/AndrusGerman/fumiko/internal/adapters/social"
+	"github.com/AndrusGerman/fumiko/internal/adapters/social/telegram"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/whatsapp"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler/fumiko"
@@ -13,14 +16,14 @@ import (
 	"go.uber.org/fx"
 )
 
-// deps
-func privide() fx.Option {
+// core Deps
+func coreDeps() fx.Option {
 	return fx.Provide(
+		//config
+		config.New,
+
 		// database
 		sqlite3.New,
-
-		// social manager
-		whatsapp.New,
 
 		// rest
 		rest.New,
@@ -30,6 +33,15 @@ func privide() fx.Option {
 	)
 }
 
+// social manager
+func socials() fx.Option {
+	return social.NewSocials(
+		whatsapp.New,
+		telegram.New,
+	)
+}
+
+// handlers
 func socialhandlerProvide() fx.Option {
 	return socialhandler.NewHandlers(
 		fumiko.NewFumikoHandler,
@@ -38,11 +50,9 @@ func socialhandlerProvide() fx.Option {
 
 func Run() {
 	var app = fx.New(
-		privide(),
+		coreDeps(),
 		socialhandlerProvide(),
-		socialhandler.NewHandlers(
-			fumiko.NewFumikoHandler,
-		),
+		socials(),
 		fx.Invoke(start),
 	)
 
@@ -51,11 +61,13 @@ func Run() {
 
 type startDto struct {
 	fx.In
-	Social         ports.Social
+	Social         []ports.Social        `group:"socail"`
 	SocialHandlers []ports.SocialHandler `group:"socialHandlers"`
 }
 
 func start(dto startDto) {
-	dto.Social.AddHandlers(dto.SocialHandlers...)
+	for i := range dto.Social {
+		dto.Social[i].AddHandlers(dto.SocialHandlers...)
+	}
 	fmt.Println("Handlers: ", dto.SocialHandlers)
 }
