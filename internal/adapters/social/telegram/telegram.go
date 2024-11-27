@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
@@ -25,8 +26,9 @@ func (t *telegram) Register() error {
 
 func (t *telegram) registerMessage() {
 	t.b.Handle(tele.OnText, func(ctx tele.Context) error {
-
 		var socialMessage = newSocialMessage(ctx, t.b)
+		fmt.Println("Received a telegram message!", socialMessage.GetText())
+
 		for i := range t.socialHandlers {
 			if t.socialHandlers[i].IsValid(socialMessage) {
 				t.socialHandlers[i].Message(socialMessage)

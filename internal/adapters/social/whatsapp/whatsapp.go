@@ -93,7 +93,7 @@ func (w *whatsapp) Start() error {
 }
 
 func (w *whatsapp) processMessage(socialMessage ports.SocialMessage) {
-	fmt.Println("Received a message!", socialMessage.GetText())
+	fmt.Println("Received a whatsapp message!", socialMessage.GetText())
 	for i := range w.socialHandlers {
 		var isValid = w.socialHandlers[i].IsValid(socialMessage)
 		if !isValid {
