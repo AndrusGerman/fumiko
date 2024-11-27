@@ -21,7 +21,7 @@ import (
 type whatsapp struct {
 	client         *whatsmeow.Client
 	deviceStore    *store.Device
-	events         chan *events.Message
+	socailMessages chan ports.SocialMessage
 	storage        ports.Storage
 	socialHandlers []ports.SocialHandler
 }
@@ -68,7 +68,7 @@ func (w *whatsapp) Start() error {
 
 	// process messages
 	go func() {
-		for message := range w.events {
+		for message := range w.socailMessages {
 			w.processMessage(message)
 		}
 	}()
@@ -92,11 +92,8 @@ func (w *whatsapp) Start() error {
 	return nil
 }
 
-func (w *whatsapp) processMessage(event *events.Message) {
-	fmt.Println("Received a message!", event.Message.GetConversation())
-
-	var socialMessage = newSocialMessage(event, w.client)
-
+func (w *whatsapp) processMessage(socialMessage ports.SocialMessage) {
+	fmt.Println("Received a message!", socialMessage.GetText())
 	for i := range w.socialHandlers {
 		var isValid = w.socialHandlers[i].IsValid(socialMessage)
 		if !isValid {
@@ -110,18 +107,26 @@ func (w *whatsapp) processMessage(event *events.Message) {
 func (w *whatsapp) eventHandler(evt interface{}) {
 	switch v := evt.(type) {
 	case *events.Message:
-		var message = v.Message.GetConversation()
-		if message == "" {
+		if w.isValidWhatsapp(v) {
 			return
 		}
-		w.events <- v
+		var sm = newSocialMessage(v, w.client)
+
+		w.socailMessages <- sm
 	}
+}
+
+func (w *whatsapp) isValidWhatsapp(event *events.Message) bool {
+	if event.Message.GetConversation() == "" {
+		return false
+	}
+	return string(event.Message.GetConversation()[0]) == ","
 }
 
 func New(lc fx.Lifecycle, storage ports.Storage) ports.Social {
 	var social = &whatsapp{
-		events:  make(chan *events.Message),
-		storage: storage,
+		socailMessages: make(chan ports.SocialMessage),
+		storage:        storage,
 	}
 
 	lc.Append(fx.StopHook(social.Close))

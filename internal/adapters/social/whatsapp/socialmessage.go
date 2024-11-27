@@ -16,7 +16,7 @@ type socialMessage struct {
 
 // GetText implements ports.SocialMessage.
 func (s *socialMessage) GetText() string {
-	return s.event.Message.GetConversation()
+	return s.event.Message.GetConversation()[1:]
 }
 
 // ReplyText implements ports.SocialMessage.
