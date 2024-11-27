@@ -1,28 +1,36 @@
 package telegram
 
 import (
+	"context"
+
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
-	tele "gopkg.in/telebot.v4"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 )
 
 type socialMessage struct {
-	ctx tele.Context
-	b   *tele.Bot
+	ctx    context.Context
+	b      *bot.Bot
+	update *models.Update
 }
 
 // GetText implements ports.SocialMessage.
 func (s *socialMessage) GetText() string {
-	return s.ctx.Text()
+	return s.update.Message.Text
 }
 
 // ReplyText implements ports.SocialMessage.
 func (s *socialMessage) ReplyText(text string) {
-	s.ctx.Send(text)
+	s.b.SendMessage(s.ctx, &bot.SendMessageParams{
+		ChatID: s.update.Message.Chat.ID,
+		Text:   text,
+	})
 }
 
-func newSocialMessage(ctx tele.Context, b *tele.Bot) ports.SocialMessage {
+func newSocialMessage(ctx context.Context, b *bot.Bot, update *models.Update) ports.SocialMessage {
 	return &socialMessage{
-		ctx: ctx,
-		b:   b,
+		ctx:    ctx,
+		b:      b,
+		update: update,
 	}
 }

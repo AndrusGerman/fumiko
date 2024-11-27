@@ -1,18 +1,19 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
-	"time"
 
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"go.uber.org/fx"
-	tele "gopkg.in/telebot.v4"
 )
 
 type telegram struct {
-	b              *tele.Bot
 	config         ports.Config
 	socialHandlers []ports.SocialHandler
+	b              *bot.Bot
 }
 
 // AddHandlers implements ports.Social.
@@ -26,41 +27,35 @@ func (t *telegram) Register() error {
 	return nil
 }
 
-func (t *telegram) registerMessage() {
-	// t.b.Handle("/start", func(ctx tele.Context) error {
-	// 	fmt.Println("Start??")
-	// 	return nil
-	// })
-	t.b.Handle(tele.OnText, func(ctx tele.Context) error {
-		var socialMessage = newSocialMessage(ctx, t.b)
-		fmt.Println("Received a telegram message!", socialMessage.GetText())
+func (t *telegram) defaulHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
-		for i := range t.socialHandlers {
-			if t.socialHandlers[i].IsValid(socialMessage) {
-				t.socialHandlers[i].Message(socialMessage)
-			}
+	if update.Message.Text == "" {
+		return
+	}
+
+	var socialMessage = newSocialMessage(ctx, b, update)
+	fmt.Println("Received a telegram message!", socialMessage.GetText())
+
+	for i := range t.socialHandlers {
+		if t.socialHandlers[i].IsValid(socialMessage) {
+			t.socialHandlers[i].Message(socialMessage)
 		}
-
-		return nil
-	})
+	}
 
 }
 
-func (t *telegram) Start() error {
-	var b *tele.Bot
-	var err error
-
-	pref := tele.Settings{
-		Token:  t.config.GetTelegramToken(),
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+func (t *telegram) Start(c context.Context) error {
+	opts := []bot.Option{
+		bot.WithDefaultHandler(t.defaulHandler),
 	}
 
-	if b, err = tele.NewBot(pref); err != nil {
+	b, err := bot.New(t.config.GetTelegramToken(), opts...)
+	if err != nil {
 		return err
 	}
 	t.b = b
 
-	t.registerMessage()
+	go b.Start(c)
 
 	return nil
 }
