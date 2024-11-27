@@ -61,7 +61,7 @@ func Run() {
 
 type startDto struct {
 	fx.In
-	Social         []ports.Social        `group:"socail"`
+	Social         []ports.Social        `group:"social"`
 	SocialHandlers []ports.SocialHandler `group:"socialHandlers"`
 }
 
@@ -69,5 +69,7 @@ func start(dto startDto) {
 	for i := range dto.Social {
 		dto.Social[i].AddHandlers(dto.SocialHandlers...)
 	}
-	fmt.Println("Handlers: ", dto.SocialHandlers)
+	fmt.Println("Handlers: ", len(dto.SocialHandlers))
+	fmt.Println("Socials: ", len(dto.Social))
+
 }

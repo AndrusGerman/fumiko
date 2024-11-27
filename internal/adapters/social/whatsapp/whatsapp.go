@@ -107,7 +107,7 @@ func (w *whatsapp) processMessage(socialMessage ports.SocialMessage) {
 func (w *whatsapp) eventHandler(evt interface{}) {
 	switch v := evt.(type) {
 	case *events.Message:
-		if w.isValidWhatsapp(v) {
+		if !w.isValidWhatsapp(v) {
 			return
 		}
 		var sm = newSocialMessage(v, w.client)

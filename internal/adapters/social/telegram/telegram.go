@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
+	"go.uber.org/fx"
 	tele "gopkg.in/telebot.v4"
 )
 
 type telegram struct {
 	b              *tele.Bot
+	config         ports.Config
 	socialHandlers []ports.SocialHandler
 }
 
@@ -25,6 +27,10 @@ func (t *telegram) Register() error {
 }
 
 func (t *telegram) registerMessage() {
+	// t.b.Handle("/start", func(ctx tele.Context) error {
+	// 	fmt.Println("Start??")
+	// 	return nil
+	// })
 	t.b.Handle(tele.OnText, func(ctx tele.Context) error {
 		var socialMessage = newSocialMessage(ctx, t.b)
 		fmt.Println("Received a telegram message!", socialMessage.GetText())
@@ -40,20 +46,29 @@ func (t *telegram) registerMessage() {
 
 }
 
-func New(config ports.Config) (ports.Social, error) {
-	var telegram = new(telegram)
+func (t *telegram) Start() error {
 	var b *tele.Bot
 	var err error
 
 	pref := tele.Settings{
-		Token:  config.GetTelegramToken(),
+		Token:  t.config.GetTelegramToken(),
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	}
 
 	if b, err = tele.NewBot(pref); err != nil {
-		return nil, err
+		return err
 	}
-	telegram.b = b
+	t.b = b
 
-	return telegram, nil
+	t.registerMessage()
+
+	return nil
+}
+
+func New(lc fx.Lifecycle, config ports.Config) ports.Social {
+	var telegram = new(telegram)
+	telegram.config = config
+
+	lc.Append(fx.StartHook(telegram.Start))
+	return telegram
 }
