@@ -1,5 +1,5 @@
-# How to login
-`go run .\cmd\login\main.go`
+# How to whatsapplogin
+`go run .\cmd\whatsapplogin\main.go`
 
 
 # How to init
