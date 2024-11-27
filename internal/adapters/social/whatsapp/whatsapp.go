@@ -19,25 +19,15 @@ import (
 )
 
 type whatsapp struct {
-	client      *whatsmeow.Client
-	deviceStore *store.Device
-	events      chan *events.Message
-
+	client         *whatsmeow.Client
+	deviceStore    *store.Device
+	events         chan *events.Message
+	storage        ports.Storage
 	socialHandlers []ports.SocialHandler
 }
 
 func (w *whatsapp) AddHandlers(handlers ...ports.SocialHandler) {
 	w.socialHandlers = handlers
-}
-
-func New(lc fx.Lifecycle) ports.Social {
-	var social = &whatsapp{
-		events: make(chan *events.Message),
-	}
-
-	lc.Append(fx.StopHook(social.Close))
-	lc.Append(fx.StartHook(social.Start))
-	return social
 }
 
 func (w *whatsapp) Register() error {
@@ -54,10 +44,7 @@ func (w *whatsapp) Register() error {
 	}
 	for evt := range qrChan {
 		if evt.Event == "code" {
-			// Render the QR code here
 			qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-			// or just manually `echo 2@... | qrencode -t ansiutf8` in a terminal
-			//fmt.Println("QR code:", evt.Code)
 		} else {
 			fmt.Println("Login event:", evt.Event)
 		}
@@ -77,6 +64,8 @@ func (w *whatsapp) Close() error {
 }
 
 func (w *whatsapp) Start() error {
+	var err error
+
 	// process messages
 	go func() {
 		for message := range w.events {
@@ -84,15 +73,15 @@ func (w *whatsapp) Start() error {
 		}
 	}()
 
-	container, err := sqlstore.New("sqlite3", "file:whatsapp.db?_foreign_keys=on", waLog.Noop)
-	if err != nil {
-		return err
-	}
-	// If you want multiple sessions, remember their JIDs and use .GetDevice(jid) or .GetAllDevices() instead.
+	// create database
+	container := sqlstore.NewWithDB(w.storage.GetDB(), w.storage.GetDialect(), waLog.Noop)
+
+	// get device store
 	w.deviceStore, err = container.GetFirstDevice()
 	if err != nil {
 		return err
 	}
+
 	client := whatsmeow.NewClient(w.deviceStore, waLog.Noop)
 	client.AddEventHandler(w.eventHandler)
 	w.client = client
@@ -127,4 +116,15 @@ func (w *whatsapp) eventHandler(evt interface{}) {
 		}
 		w.events <- v
 	}
+}
+
+func New(lc fx.Lifecycle, storage ports.Storage) ports.Social {
+	var social = &whatsapp{
+		events:  make(chan *events.Message),
+		storage: storage,
+	}
+
+	lc.Append(fx.StopHook(social.Close))
+	lc.Append(fx.StartHook(social.Start))
+	return social
 }

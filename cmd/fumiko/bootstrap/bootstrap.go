@@ -8,6 +8,7 @@ import (
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/whatsapp"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler/fumiko"
+	"github.com/AndrusGerman/fumiko/internal/adapters/storage/sqlite3"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	"go.uber.org/fx"
 )
@@ -15,6 +16,9 @@ import (
 // deps
 func privide() fx.Option {
 	return fx.Provide(
+		// database
+		sqlite3.New,
+
 		// social manager
 		whatsapp.New,
 
