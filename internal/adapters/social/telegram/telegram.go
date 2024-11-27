@@ -38,7 +38,7 @@ func (t *telegram) defaulHandler(ctx context.Context, b *bot.Bot, update *models
 
 	for i := range t.socialHandlers {
 		if t.socialHandlers[i].IsValid(socialMessage) {
-			t.socialHandlers[i].Message(socialMessage)
+			go t.socialHandlers[i].Message(socialMessage)
 		}
 	}
 
