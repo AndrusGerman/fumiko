@@ -9,6 +9,7 @@ import (
 )
 
 type rest struct {
+	client *http.Client
 }
 
 // Post implements ports.Rest.
@@ -21,7 +22,7 @@ func (r *rest) Post(url string, body any, out any) error {
 		return err
 	}
 
-	if resp, err = http.Post(url, "application/json", bytes.NewReader(bodyByte)); err != nil {
+	if resp, err = r.client.Post(url, "application/json", bytes.NewReader(bodyByte)); err != nil {
 		return err
 	}
 
@@ -29,5 +30,7 @@ func (r *rest) Post(url string, body any, out any) error {
 }
 
 func New() ports.Rest {
-	return &rest{}
+	return &rest{
+		client: &http.Client{},
+	}
 }

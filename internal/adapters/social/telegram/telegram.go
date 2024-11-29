@@ -28,12 +28,11 @@ func (t *telegram) Register() error {
 }
 
 func (t *telegram) defaulHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-
 	if update.Message.Text == "" {
 		return
 	}
 
-	var socialMessage = newSocialMessage(ctx, b, update)
+	var socialMessage = newSocialMessage(context.TODO(), b, update)
 	fmt.Println("Received a telegram message!", socialMessage.GetText())
 
 	for i := range t.socialHandlers {
