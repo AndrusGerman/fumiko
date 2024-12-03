@@ -3,6 +3,7 @@ package whatsapp
 import (
 	"context"
 
+	"github.com/AndrusGerman/fumiko/internal/core/domain"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
@@ -13,6 +14,16 @@ type socialMessage struct {
 	event  *events.Message
 	client *whatsmeow.Client
 	w      *whatsapp
+}
+
+// GetUserName implements ports.SocialMessage.
+func (s *socialMessage) GetUserName() string {
+	return s.event.Info.PushName
+}
+
+// GetUserID implements ports.SocialMessage.
+func (s *socialMessage) GetUserID() domain.UserID {
+	return domain.NewUserID(domain.WhatsappSocialID, s.event.Info.Sender.ADString())
 }
 
 // GetText implements ports.SocialMessage.

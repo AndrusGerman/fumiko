@@ -2,7 +2,9 @@ package telegram
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/AndrusGerman/fumiko/internal/core/domain"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	"github.com/NicoNex/echotron/v3"
 )
@@ -11,6 +13,16 @@ type socialMessage struct {
 	ctx    context.Context
 	update *echotron.Update
 	e      echotron.API
+}
+
+// GetUserName implements ports.SocialMessage.
+func (s *socialMessage) GetUserName() string {
+	return ""
+}
+
+// GetUserID implements ports.SocialMessage.
+func (s *socialMessage) GetUserID() domain.UserID {
+	return domain.NewUserID(domain.TelegramSocialID, strconv.Itoa(int(s.update.ChatID())))
 }
 
 // GetText implements ports.SocialMessage.
