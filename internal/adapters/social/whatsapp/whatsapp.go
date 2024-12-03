@@ -24,6 +24,7 @@ type whatsapp struct {
 	socailMessages chan ports.SocialMessage
 	storage        ports.Storage
 	socialHandlers []ports.SocialHandler
+	keyText        string
 }
 
 func (w *whatsapp) AddHandlers(handlers ...ports.SocialHandler) {
@@ -110,9 +111,8 @@ func (w *whatsapp) eventHandler(evt interface{}) {
 		if !w.isValidWhatsapp(v) {
 			return
 		}
-		var sm = newSocialMessage(v, w.client)
 
-		w.socailMessages <- sm
+		w.socailMessages <- newSocialMessage(v, w.client, w)
 	}
 }
 
@@ -120,13 +120,14 @@ func (w *whatsapp) isValidWhatsapp(event *events.Message) bool {
 	if event.Message.GetConversation() == "" {
 		return false
 	}
-	return string(event.Message.GetConversation()[0]) == ","
+	return string(event.Message.GetConversation()[0]) == w.keyText
 }
 
 func New(lc fx.Lifecycle, storage ports.Storage) ports.Social {
 	var social = &whatsapp{
 		socailMessages: make(chan ports.SocialMessage),
 		storage:        storage,
+		keyText:        ",",
 	}
 
 	lc.Append(fx.StopHook(social.Close))

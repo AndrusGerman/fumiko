@@ -12,11 +12,13 @@ import (
 type socialMessage struct {
 	event  *events.Message
 	client *whatsmeow.Client
+	w      *whatsapp
 }
 
 // GetText implements ports.SocialMessage.
 func (s *socialMessage) GetText() string {
-	return s.event.Message.GetConversation()[1:]
+	var ignoreTextLength = len(s.w.keyText)
+	return s.event.Message.GetConversation()[ignoreTextLength:]
 }
 
 // ReplyText implements ports.SocialMessage.
@@ -26,9 +28,10 @@ func (s *socialMessage) ReplyText(text string) {
 	})
 }
 
-func newSocialMessage(event *events.Message, client *whatsmeow.Client) ports.SocialMessage {
+func newSocialMessage(event *events.Message, client *whatsmeow.Client, w *whatsapp) ports.SocialMessage {
 	return &socialMessage{
 		event:  event,
 		client: client,
+		w:      w,
 	}
 }
