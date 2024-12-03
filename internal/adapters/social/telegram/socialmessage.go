@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
-	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
+	"github.com/NicoNex/echotron/v3"
 )
 
 type socialMessage struct {
 	ctx    context.Context
-	b      *bot.Bot
-	update *models.Update
+	update *echotron.Update
+	e      echotron.API
 }
 
 // GetText implements ports.SocialMessage.
@@ -21,16 +20,13 @@ func (s *socialMessage) GetText() string {
 
 // ReplyText implements ports.SocialMessage.
 func (s *socialMessage) ReplyText(text string) {
-	s.b.SendMessage(s.ctx, &bot.SendMessageParams{
-		ChatID: s.update.Message.Chat.ID,
-		Text:   text,
-	})
+	s.e.SendMessage(text, s.update.ChatID(), &echotron.MessageOptions{})
 }
 
-func newSocialMessage(ctx context.Context, b *bot.Bot, update *models.Update) ports.SocialMessage {
+func newSocialMessage(ctx context.Context, update *echotron.Update, e echotron.API) ports.SocialMessage {
 	return &socialMessage{
 		ctx:    ctx,
-		b:      b,
 		update: update,
+		e:      e,
 	}
 }

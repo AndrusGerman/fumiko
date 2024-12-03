@@ -5,15 +5,15 @@ import (
 	"fmt"
 
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
-	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
+	"github.com/NicoNex/echotron/v3"
+
 	"go.uber.org/fx"
 )
 
 type telegram struct {
 	config         ports.Config
 	socialHandlers []ports.SocialHandler
-	b              *bot.Bot
+	e              echotron.API
 }
 
 // AddHandlers implements ports.Social.
@@ -27,12 +27,12 @@ func (t *telegram) Register() error {
 	return nil
 }
 
-func (t *telegram) defaulHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (t *telegram) defaulHandler(update *echotron.Update) {
 	if update.Message.Text == "" {
 		return
 	}
 
-	var socialMessage = newSocialMessage(context.TODO(), b, update)
+	var socialMessage = newSocialMessage(context.TODO(), update, t.e)
 	fmt.Println("Received a telegram message!", socialMessage.GetText())
 
 	for i := range t.socialHandlers {
@@ -44,17 +44,13 @@ func (t *telegram) defaulHandler(ctx context.Context, b *bot.Bot, update *models
 }
 
 func (t *telegram) Start(c context.Context) error {
-	opts := []bot.Option{
-		bot.WithDefaultHandler(t.defaulHandler),
-	}
+	t.e = echotron.NewAPI(t.config.GetTelegramToken())
 
-	b, err := bot.New(t.config.GetTelegramToken(), opts...)
-	if err != nil {
-		return err
-	}
-	t.b = b
-
-	go b.Start(c)
+	go func() {
+		for update := range echotron.PollingUpdates(t.config.GetTelegramToken()) {
+			t.defaulHandler(update)
+		}
+	}()
 
 	return nil
 }

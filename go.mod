@@ -3,11 +3,11 @@ module github.com/AndrusGerman/fumiko
 go 1.23.3
 
 require (
-	github.com/go-telegram/bot v1.11.1
+	github.com/NicoNex/echotron/v3 v3.39.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/mdp/qrterminal v1.0.1
-	go.mau.fi/whatsmeow v0.0.0-20241121132808-ae900cb6bee4
+	go.mau.fi/whatsmeow v0.0.0-20241202173457-b2dd543e5721
 	go.uber.org/fx v1.23.0
 )
 
@@ -26,6 +26,7 @@ require (
 	golang.org/x/crypto v0.29.0 // indirect
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
