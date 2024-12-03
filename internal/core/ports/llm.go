@@ -10,4 +10,6 @@ type LLM interface {
 type LLMContext interface {
 	GetMessages(id domain.UserID) []*domain.Message
 	AddMessages(id domain.UserID, messages []*domain.Message)
+	SetMessages(id domain.UserID, messages []*domain.Message)
+	ClearMessage(id domain.UserID)
 }
