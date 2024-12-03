@@ -3,9 +3,10 @@ package ports
 import "github.com/AndrusGerman/fumiko/internal/core/domain"
 
 type LLM interface {
-	BasicQuest(text string) string
+	BasicQuest(text string) (string, error)
+	Quest(base []*domain.Message, text string) (*domain.Message, error)
 }
 
 type LLMContext interface {
-	GetMessages(id string) []*domain.Message
+	GetMessages(id domain.UserID) []*domain.Message
 }

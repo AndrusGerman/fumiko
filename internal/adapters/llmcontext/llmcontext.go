@@ -9,12 +9,12 @@ type LLMContext struct {
 	messagesMemory map[string][]*domain.Message
 }
 
-func NewLLMContext() ports.LLMContext {
+func New() ports.LLMContext {
 	return &LLMContext{
 		messagesMemory: make(map[string][]*domain.Message),
 	}
 }
 
-func (lc *LLMContext) GetMessages(id string) []*domain.Message {
-	return lc.messagesMemory[id]
+func (lc *LLMContext) GetMessages(id domain.UserID) []*domain.Message {
+	return lc.messagesMemory[id.String()]
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/AndrusGerman/fumiko/internal/adapters/config"
 	"github.com/AndrusGerman/fumiko/internal/adapters/llm/ollama"
+	"github.com/AndrusGerman/fumiko/internal/adapters/llmcontext"
 	"github.com/AndrusGerman/fumiko/internal/adapters/rest"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/telegram"
@@ -29,6 +30,7 @@ func coreDeps() fx.Option {
 		rest.New,
 
 		// llm
+		llmcontext.New,
 		ollama.New,
 	)
 }

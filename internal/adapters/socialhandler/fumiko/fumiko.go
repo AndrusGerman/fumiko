@@ -2,14 +2,16 @@ package fumiko
 
 import "github.com/AndrusGerman/fumiko/internal/core/ports"
 
-func NewFumikoHandler(llm ports.LLM) ports.SocialHandler {
+func NewFumikoHandler(llm ports.LLM, llmContext ports.LLMContext) ports.SocialHandler {
 	return &FumikoHandler{
-		llm: llm,
+		llm:        llm,
+		llmContext: llmContext,
 	}
 }
 
 type FumikoHandler struct {
-	llm ports.LLM
+	llm        ports.LLM
+	llmContext ports.LLMContext
 }
 
 // IsValid implements ports.SocialHandler.
@@ -19,8 +21,12 @@ func (f *FumikoHandler) IsValid(sm ports.SocialMessage) bool {
 
 // Message implements ports.SocialHandler.
 func (f *FumikoHandler) Message(sm ports.SocialMessage) {
-	sm.GetText()
-	var response = f.llm.BasicQuest(sm.GetText())
 
-	sm.ReplyText("Fumiko💚:\n" + response)
+	var base = f.llmContext.GetMessages(sm.GetUserID())
+	var response, err = f.llm.Quest(base, sm.GetText())
+	if err != nil {
+		return
+	}
+
+	sm.ReplyText("Fumiko💚:\n" + response.Content)
 }

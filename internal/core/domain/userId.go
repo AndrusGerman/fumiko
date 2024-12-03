@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 type SocialID string
 
 const (
@@ -18,6 +20,10 @@ func (u *UserID) SocialID() SocialID {
 
 func (u *UserID) ID() string {
 	return u.id
+}
+
+func (u *UserID) String() string {
+	return fmt.Sprintf("%s:%s", u.SocialID(), u.ID())
 }
 
 func NewUserID(socialID SocialID, id string) UserID {
