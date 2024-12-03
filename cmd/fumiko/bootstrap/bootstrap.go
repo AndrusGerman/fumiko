@@ -14,6 +14,7 @@ import (
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler/fumiko"
 	"github.com/AndrusGerman/fumiko/internal/adapters/storage/sqlite3"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
+	"github.com/AndrusGerman/fumiko/internal/core/services"
 	"go.uber.org/fx"
 )
 
@@ -32,6 +33,9 @@ func coreDeps() fx.Option {
 		// llm
 		llmcontext.New,
 		ollama.New,
+
+		// services
+		services.NewFumikoService,
 	)
 }
 
