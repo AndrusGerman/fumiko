@@ -12,11 +12,17 @@ type FumikoService struct {
 
 // Quest implements ports.FumikoService.
 func (f *FumikoService) Quest(userID domain.UserID, text string) (string, error) {
+	// get llm last context
 	var base = f.llmContext.GetMessages(userID)
+
+	// get llm response
 	var response, err = f.llm.Quest(base, text)
 	if err != nil {
 		return "", err
 	}
+
+	// add new message to context
+	f.llmContext.AddMessages(userID, []*domain.Message{response})
 
 	return response.Content, nil
 }
