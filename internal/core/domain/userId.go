@@ -7,6 +7,7 @@ type SocialID string
 const (
 	WhatsappSocialID SocialID = "whatsapp"
 	TelegramSocialID SocialID = "telegram"
+	DiscordSocialID  SocialID = "discord"
 )
 
 type UserID struct {

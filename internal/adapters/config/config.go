@@ -10,6 +10,12 @@ import (
 
 type config struct {
 	telegramToken string
+	discordToken  string
+}
+
+// GetDiscordToken implements ports.Config.
+func (c *config) GetDiscordToken() string {
+	return c.discordToken
 }
 
 // GetTelegramToken implements ports.Config.
@@ -21,6 +27,9 @@ func (c *config) Error() error {
 	if c.telegramToken == "" {
 		return domain.ErrConfigTelegramTokenIsUndefined
 	}
+	if c.discordToken == "" {
+		return domain.ErrConfigDiscordTokenIsUndefined
+	}
 	return nil
 }
 
@@ -30,6 +39,7 @@ func New() (ports.Config, error) {
 
 	var config = &config{
 		telegramToken: os.Getenv("TELEGRAM_TOKEN"),
+		discordToken:  os.Getenv("DISCORD_TOKEN"),
 	}
 
 	if err = config.Error(); err != nil {

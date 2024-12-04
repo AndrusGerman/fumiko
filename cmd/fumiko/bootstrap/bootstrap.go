@@ -8,6 +8,7 @@ import (
 	"github.com/AndrusGerman/fumiko/internal/adapters/llmcontext"
 	"github.com/AndrusGerman/fumiko/internal/adapters/rest"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social"
+	"github.com/AndrusGerman/fumiko/internal/adapters/social/discord"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/telegram"
 	"github.com/AndrusGerman/fumiko/internal/adapters/social/whatsapp"
 	"github.com/AndrusGerman/fumiko/internal/adapters/socialhandler"
@@ -44,6 +45,7 @@ func socials() fx.Option {
 	return social.NewSocials(
 		whatsapp.New,
 		telegram.New,
+		discord.New,
 	)
 }
 
