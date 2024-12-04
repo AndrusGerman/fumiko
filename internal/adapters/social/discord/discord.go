@@ -32,6 +32,9 @@ func (t *discord) defaulHandler(s *discordgo.Session, m *discordgo.MessageCreate
 	if m.Content == "" {
 		return
 	}
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
 
 	var socialMessage = newSocialMessage(s, m)
 	fmt.Println("Received a discord message!", socialMessage.GetText())
