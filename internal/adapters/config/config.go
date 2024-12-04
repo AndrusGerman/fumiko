@@ -9,8 +9,14 @@ import (
 )
 
 type config struct {
-	telegramToken string
-	discordToken  string
+	telegramToken  string
+	discordToken   string
+	baseLLMContext string
+}
+
+// GetBaseLLMContext implements ports.Config.
+func (c *config) GetBaseLLMContext() string {
+	return c.baseLLMContext
 }
 
 // GetDiscordToken implements ports.Config.
@@ -30,6 +36,9 @@ func (c *config) Error() error {
 	if c.discordToken == "" {
 		return domain.ErrConfigDiscordTokenIsUndefined
 	}
+	if c.baseLLMContext == "" {
+		return domain.ErrConfigBaseLLMContextIsUndefined
+	}
 	return nil
 }
 
@@ -38,8 +47,9 @@ func New() (ports.Config, error) {
 	var err error
 
 	var config = &config{
-		telegramToken: os.Getenv("TELEGRAM_TOKEN"),
-		discordToken:  os.Getenv("DISCORD_TOKEN"),
+		telegramToken:  os.Getenv("TELEGRAM_TOKEN"),
+		discordToken:   os.Getenv("DISCORD_TOKEN"),
+		baseLLMContext: os.Getenv("BASE_LLMCONTEXT"),
 	}
 
 	if err = config.Error(); err != nil {

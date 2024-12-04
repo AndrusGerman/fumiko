@@ -7,6 +7,7 @@ import (
 
 type LLMContext struct {
 	messagesMemory map[string][]*domain.Message
+	config         ports.Config
 }
 
 // ClearMessage implements ports.LLMContext.
@@ -24,12 +25,17 @@ func (lc *LLMContext) AddMessages(id domain.UserID, messages []*domain.Message) 
 	lc.messagesMemory[id.String()] = append(lc.messagesMemory[id.String()], messages...)
 }
 
-func New() ports.LLMContext {
+func New(config ports.Config) ports.LLMContext {
 	return &LLMContext{
 		messagesMemory: make(map[string][]*domain.Message),
+		config:         config,
 	}
 }
 
 func (lc *LLMContext) GetMessages(id domain.UserID) []*domain.Message {
-	return lc.messagesMemory[id.String()]
+	if len(lc.messagesMemory[id.String()]) > 0 {
+		return lc.messagesMemory[id.String()]
+	}
+
+	return []*domain.Message{domain.NewMessage(lc.config.GetBaseLLMContext(), domain.SystemRoleID)}
 }

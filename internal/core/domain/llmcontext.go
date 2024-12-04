@@ -5,6 +5,7 @@ type RoleID string
 const (
 	UserRoleID      RoleID = "user"
 	AssistantRoleID RoleID = "assistant"
+	SystemRoleID    RoleID = "system"
 )
 
 type Message struct {

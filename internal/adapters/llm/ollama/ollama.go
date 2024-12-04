@@ -46,8 +46,14 @@ func (o *ollama) Quest(base []*domain.Message, text string) (*domain.Message, er
 	for i := range base {
 		if base[i].RoleID == domain.AssistantRoleID {
 			messages[i] = newMessage("assistant", base[i].Content)
-		} else {
+		}
+
+		if base[i].RoleID == domain.UserRoleID {
 			messages[i] = newMessage("user", base[i].Content)
+		}
+
+		if base[i].RoleID == domain.SystemRoleID {
+			messages[i] = newMessage("system", base[i].Content)
 		}
 	}
 
