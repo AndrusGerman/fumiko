@@ -57,8 +57,10 @@ func (t *telegram) Start(c context.Context) error {
 
 func New(lc fx.Lifecycle, config ports.Config) ports.Social {
 	var telegram = new(telegram)
+	if !config.EnableTelegram() {
+		return telegram
+	}
 	telegram.config = config
-
 	lc.Append(fx.StartHook(telegram.Start))
 	return telegram
 }

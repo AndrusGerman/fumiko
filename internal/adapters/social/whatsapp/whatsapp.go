@@ -123,11 +123,15 @@ func (w *whatsapp) isValidWhatsapp(event *events.Message) bool {
 	return string(event.Message.GetConversation()[0]) == w.keyText
 }
 
-func New(lc fx.Lifecycle, storage ports.Storage) ports.Social {
+func New(lc fx.Lifecycle, storage ports.Storage, config ports.Config) ports.Social {
 	var social = &whatsapp{
 		socailMessages: make(chan ports.SocialMessage),
 		storage:        storage,
 		keyText:        ",",
+	}
+
+	if !config.EnableDiscord() {
+		return social
 	}
 
 	lc.Append(fx.StopHook(social.Close))

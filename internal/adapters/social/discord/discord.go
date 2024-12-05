@@ -70,8 +70,10 @@ func (t *discord) Close(c context.Context) error {
 
 func New(lc fx.Lifecycle, config ports.Config) ports.Social {
 	var discord = new(discord)
+	if !config.EnableDiscord() {
+		return discord
+	}
 	discord.config = config
-
 	lc.Append(fx.StartHook(discord.Start))
 	lc.Append(fx.StopHook(discord.Close))
 	return discord
