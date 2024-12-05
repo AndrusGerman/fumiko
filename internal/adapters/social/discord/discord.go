@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/AndrusGerman/fumiko/internal/adapters/social/dump"
+	"github.com/AndrusGerman/fumiko/internal/core/domain"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	"github.com/bwmarrin/discordgo"
 
@@ -24,8 +26,12 @@ func (t *discord) AddHandlers(handlers ...ports.SocialHandler) {
 
 // Register implements ports.Social.
 func (t *discord) Register() error {
-
 	return nil
+}
+
+// GetSocialID implements ports.Social.
+func (d *discord) GetSocialID() domain.SocialID {
+	return domain.DiscordSocialID
 }
 
 func (t *discord) defaulHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -60,7 +66,6 @@ func (t *discord) Start(c context.Context) error {
 }
 
 func (t *discord) Close(c context.Context) error {
-
 	if t.s == nil {
 		return nil
 	}
@@ -69,10 +74,11 @@ func (t *discord) Close(c context.Context) error {
 }
 
 func New(lc fx.Lifecycle, config ports.Config) ports.Social {
-	var discord = new(discord)
-	if !config.EnableDiscord() {
-		return discord
+	if !config.EnableSocial(domain.DiscordSocialID) {
+		return dump.New()
 	}
+
+	var discord = new(discord)
 	discord.config = config
 	lc.Append(fx.StartHook(discord.Start))
 	lc.Append(fx.StopHook(discord.Close))

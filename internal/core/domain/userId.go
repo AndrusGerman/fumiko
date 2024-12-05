@@ -2,14 +2,6 @@ package domain
 
 import "fmt"
 
-type SocialID string
-
-const (
-	WhatsappSocialID SocialID = "whatsapp"
-	TelegramSocialID SocialID = "telegram"
-	DiscordSocialID  SocialID = "discord"
-)
-
 type UserID struct {
 	socialID SocialID
 	id       string

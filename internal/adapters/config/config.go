@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/AndrusGerman/fumiko/internal/core/domain"
@@ -14,24 +15,12 @@ type config struct {
 	discordToken   string
 	baseLLMContext string
 
-	enableDiscord  bool
-	enableTelegram bool
-	enableWhatsapp bool
+	flagsSocial map[domain.SocialID]*bool
 }
 
-// EnableDiscord implements ports.Config.
-func (c *config) EnableDiscord() bool {
-	return c.enableDiscord
-}
-
-// EnableTelegram implements ports.Config.
-func (c *config) EnableTelegram() bool {
-	return c.enableTelegram
-}
-
-// EnableWhatsapp implements ports.Config.
-func (c *config) EnableWhatsapp() bool {
-	return c.enableWhatsapp
+// EnableSocial implements ports.Config.
+func (c *config) EnableSocial(socialID domain.SocialID) bool {
+	return *c.flagsSocial[socialID]
 }
 
 // GetBaseLLMContext implements ports.Config.
@@ -50,12 +39,14 @@ func (c *config) GetTelegramToken() string {
 }
 
 func (c *config) Error() error {
-	if c.telegramToken == "" && c.enableTelegram {
+	if c.telegramToken == "" && c.EnableSocial(domain.TelegramSocialID) {
 		return domain.ErrConfigTelegramTokenIsUndefined
 	}
-	if c.discordToken == "" && c.enableDiscord {
+
+	if c.discordToken == "" && c.EnableSocial(domain.DiscordSocialID) {
 		return domain.ErrConfigDiscordTokenIsUndefined
 	}
+
 	if c.baseLLMContext == "" {
 		return domain.ErrConfigBaseLLMContextIsUndefined
 	}
@@ -70,9 +61,11 @@ func (c *config) ReadEnv() error {
 }
 
 func (c *config) ReadFlags() error {
-	flag.BoolVar(&c.enableDiscord, "discord", false, "enable or disable discord")
-	flag.BoolVar(&c.enableTelegram, "telegram", false, "enable or disable telegram")
-	flag.BoolVar(&c.enableWhatsapp, "whatsapp", false, "enable or disable whatsapp")
+	for _, social := range domain.AppSocialList {
+		var socialValue = false
+		c.flagsSocial[social] = &socialValue
+		flag.BoolVar(c.flagsSocial[social], social.String(), false, fmt.Sprintf("enable or disable %s", social))
+	}
 
 	flag.Parse()
 	return nil
@@ -82,7 +75,9 @@ func New() (ports.Config, error) {
 	godotenv.Load()
 	var err error
 
-	var config = new(config)
+	var config = &config{
+		flagsSocial: make(map[domain.SocialID]*bool),
+	}
 
 	if err = config.ReadEnv(); err != nil {
 		return nil, err

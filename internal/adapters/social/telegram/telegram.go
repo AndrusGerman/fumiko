@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/AndrusGerman/fumiko/internal/adapters/social/dump"
+	"github.com/AndrusGerman/fumiko/internal/core/domain"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	"github.com/NicoNex/echotron/v3"
 
@@ -55,11 +57,17 @@ func (t *telegram) Start(c context.Context) error {
 	return nil
 }
 
+// GetSocialID implements ports.Social.
+func (d *telegram) GetSocialID() domain.SocialID {
+	return domain.TelegramSocialID
+}
+
 func New(lc fx.Lifecycle, config ports.Config) ports.Social {
-	var telegram = new(telegram)
-	if !config.EnableTelegram() {
-		return telegram
+	if !config.EnableSocial(domain.TelegramSocialID) {
+		return dump.New()
 	}
+
+	var telegram = new(telegram)
 	telegram.config = config
 	lc.Append(fx.StartHook(telegram.Start))
 	return telegram

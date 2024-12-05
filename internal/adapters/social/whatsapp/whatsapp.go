@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/AndrusGerman/fumiko/internal/adapters/social/dump"
+	"github.com/AndrusGerman/fumiko/internal/core/domain"
 	"github.com/AndrusGerman/fumiko/internal/core/ports"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
@@ -54,6 +56,11 @@ func (w *whatsapp) Register() error {
 	time.Sleep(time.Second * 1)
 	w.deviceStore.Save()
 	return nil
+}
+
+// GetSocialID implements ports.Social.
+func (d *whatsapp) GetSocialID() domain.SocialID {
+	return domain.WhatsappSocialID
 }
 
 func (w *whatsapp) Close() error {
@@ -124,14 +131,14 @@ func (w *whatsapp) isValidWhatsapp(event *events.Message) bool {
 }
 
 func New(lc fx.Lifecycle, storage ports.Storage, config ports.Config) ports.Social {
+	if !config.EnableSocial(domain.WhatsappSocialID) {
+		return dump.New()
+	}
+
 	var social = &whatsapp{
 		socailMessages: make(chan ports.SocialMessage),
 		storage:        storage,
 		keyText:        ",",
-	}
-
-	if !config.EnableDiscord() {
-		return social
 	}
 
 	lc.Append(fx.StopHook(social.Close))
