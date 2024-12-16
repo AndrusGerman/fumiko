@@ -28,11 +28,11 @@ func (o *ollama) BasicQuest(text string) (string, error) {
 
 	memory = append(memory, m)
 
-	var request = newOllamaRequest(o.model, memory)
+	var request = newOllamaRequest(o.model, memory, false)
 	var err error
-	var response = new(messageResponse)
+	var response *messageResponse
 
-	if err = o.newRequest(request, response); err != nil {
+	if response, err = o.newRequest(request); err != nil {
 		return "", nil
 	}
 
@@ -40,8 +40,8 @@ func (o *ollama) BasicQuest(text string) (string, error) {
 }
 
 func (o *ollama) Quest(base []*domain.Message, text string) (*domain.Message, error) {
-
 	var messages = make([]*message, len(base))
+	var response *messageResponse
 
 	for i := range base {
 		if base[i].RoleID == domain.AssistantRoleID {
@@ -60,19 +60,31 @@ func (o *ollama) Quest(base []*domain.Message, text string) (*domain.Message, er
 	var m = newMessage("user", strings.TrimSpace(text))
 	messages = append(messages, m)
 
-	var request = newOllamaRequest(o.model, messages)
+	var request = newOllamaRequest(o.model, messages, false)
 	var err error
-	var response = new(messageResponse)
 
-	if err = o.newRequest(request, response); err != nil {
+	if response, err = o.newRequest(request); err != nil {
 		return nil, err
 	}
 
 	return domain.NewMessage(strings.TrimSpace(response.Message.Content), domain.AssistantRoleID), nil
 }
 
-func (o *ollama) newRequest(request *ollamaRequest, response *messageResponse) error {
+func (o *ollama) newRequest(request *ollamaRequest) (*messageResponse, error) {
 	o.mt.Lock()
 	defer o.mt.Unlock()
-	return o.rest.Post("http://localhost:11434/api/chat", request, &response)
+
+	var data, err = o.rest.Stream("http://localhost:11434/api/chat", request)
+	if err != nil {
+		return nil, err
+	}
+
+	var response = new(messageResponse)
+	dataRaw := <-data
+
+	if err = dataRaw.Parse(response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }

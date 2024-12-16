@@ -6,10 +6,10 @@ type ollamaRequest struct {
 	Messages []*message `json:"messages"`
 }
 
-func newOllamaRequest(model string, messages []*message) *ollamaRequest {
+func newOllamaRequest(model string, messages []*message, stream bool) *ollamaRequest {
 	return &ollamaRequest{
 		Model:    model,
 		Messages: messages,
-		Stream:   false,
+		Stream:   stream,
 	}
 }
