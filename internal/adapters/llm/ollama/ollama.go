@@ -39,9 +39,8 @@ func (o *ollama) BasicQuest(text string) (string, error) {
 	return response.Message.Content, nil
 }
 
-func (o *ollama) Quest(base []*domain.Message, text string) (*domain.Message, error) {
+func (o *ollama) newMessages(base []*domain.Message) []*message {
 	var messages = make([]*message, len(base))
-	var response *messageResponse
 
 	for i := range base {
 		if base[i].RoleID == domain.AssistantRoleID {
@@ -56,6 +55,12 @@ func (o *ollama) Quest(base []*domain.Message, text string) (*domain.Message, er
 			messages[i] = newMessage("system", base[i].Content)
 		}
 	}
+	return messages
+}
+
+func (o *ollama) Quest(base []*domain.Message, text string) (*domain.Message, error) {
+	var messages = o.newMessages(base)
+	var response *messageResponse
 
 	var m = newMessage("user", strings.TrimSpace(text))
 	messages = append(messages, m)
