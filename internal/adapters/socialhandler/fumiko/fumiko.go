@@ -20,10 +20,14 @@ func (f *FumikoHandler) IsValid(sm ports.SocialMessage) bool {
 // Message implements ports.SocialHandler.
 func (f *FumikoHandler) Message(sm ports.SocialMessage) {
 
-	var response, err = f.fumikoService.Quest(sm.GetUserID(), sm.GetText())
+	var responseStream, err = f.fumikoService.QuestParts(sm.GetUserID(), sm.GetText(), 140)
 	if err != nil {
 		sm.ReplyText("Fumiko😖: Error " + err.Error())
 		return
 	}
-	sm.ReplyText("Fumiko💚:\n" + response)
+
+	for response := range responseStream {
+		sm.ReplyText(response)
+	}
+
 }
